@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CURRENCIES, CATEGORIES } from "@/lib/validate";
 import type { Currency, Category } from "@/lib/validate";
@@ -21,6 +21,11 @@ export default function ExpensePage() {
   const [savedAmountRsd, setSavedAmountRsd] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (token) sessionStorage.setItem("api_token", token);
+  }, []);
+
   const amountNum = parseFloat(amount);
   const isValid =
     amount !== "" && !isNaN(amountNum) && amountNum > 0 && category !== "" && entryDate !== "";
@@ -30,7 +35,10 @@ export default function ExpensePage() {
     setState("loading");
     setErrorMsg("");
 
-    const token = new URLSearchParams(window.location.search).get("token") ?? "";
+    const token =
+      new URLSearchParams(window.location.search).get("token") ??
+      sessionStorage.getItem("api_token") ??
+      "";
 
     try {
       const res = await fetch(`/api/expenses?token=${encodeURIComponent(token)}`, {
