@@ -5,8 +5,8 @@ export async function getFxRateToRsd(currency: Currency): Promise<number> {
   if (currency === "RSD") return 1;
 
   const res = await fetch(
-    `https://api.frankfurter.app/latest?from=${currency}&to=RSD`,
-    { next: { revalidate: 3600 } } // cache 1 hour
+    `https://open.er-api.com/v6/latest/${currency}`,
+    { next: { revalidate: 3600 } }
   );
 
   if (!res.ok) throw new Error(`FX fetch failed: ${res.status}`);
