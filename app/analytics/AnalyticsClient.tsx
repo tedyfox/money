@@ -9,10 +9,39 @@ const MONTH_NAMES = [
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 ];
 
+const CURRENCIES = ["RSD", "EUR", "RUB", "USD", "GEL"] as const;
+type FxCurrency = typeof CURRENCIES[number];
+
 const LS_BUDGET = "budget_monthly_rsd";
-const LS_RENT = "budget_fixed_rent_eur";
-const LS_UTILITIES = "budget_fixed_utilities_rsd";
-const LS_LOAN = "budget_fixed_loan_rub";
+const LS_FIXED = "budget_fixed_expenses";
+
+interface FixedExpense {
+  id: string;
+  name: string;
+  amount: number;
+  currency: FxCurrency;
+}
+
+const DEFAULT_FIXED: FixedExpense[] = [
+  { id: "rent", name: "Аренда", amount: 800, currency: "EUR" },
+  { id: "utilities", name: "Коммуналка", amount: 25000, currency: "RSD" },
+  { id: "loan", name: "Кредит", amount: 21560, currency: "RUB" },
+];
+
+function loadFixed(): FixedExpense[] {
+  if (typeof window === "undefined") return DEFAULT_FIXED;
+  try {
+    const v = localStorage.getItem(LS_FIXED);
+    if (!v) return DEFAULT_FIXED;
+    return JSON.parse(v) as FixedExpense[];
+  } catch {
+    return DEFAULT_FIXED;
+  }
+}
+
+function saveFixed(items: FixedExpense[]) {
+  localStorage.setItem(LS_FIXED, JSON.stringify(items));
+}
 
 function readLS(key: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
@@ -32,34 +61,72 @@ function fmtOrig(amount: number, currency: string): string {
 
 function fmtDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  return new Date(y, m - 1, d).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 }
 
-interface EditableNumberProps {
+// --- Inline editable text ---
+function EditableText({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  function commit() {
+    const trimmed = draft.trim();
+    if (trimmed) onChange(trimmed);
+    else setDraft(value);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+        className="bg-zinc-800 text-white rounded-lg px-2 py-0.5 text-sm w-32 outline-none focus:ring-1 focus:ring-white/30"
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setDraft(value); setEditing(true); }}
+      className="text-zinc-300 text-sm underline decoration-dotted underline-offset-2 hover:text-white transition-colors text-left"
+    >
+      {value}
+    </button>
+  );
+}
+
+// --- Inline editable number ---
+function EditableNumber({
+  value,
+  onChange,
+}: {
   value: number;
-  lsKey: string;
   onChange: (v: number) => void;
-  suffix?: string;
-}
-
-function EditableNumber({ value, lsKey, onChange, suffix }: EditableNumberProps) {
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value));
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (editing) inputRef.current?.focus();
-  }, [editing]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
 
   function commit() {
     const n = parseFloat(draft);
-    if (!isNaN(n) && n >= 0) {
-      localStorage.setItem(lsKey, String(n));
-      onChange(n);
-    } else {
-      setDraft(String(value));
-    }
+    if (!isNaN(n) && n >= 0) onChange(n);
+    else setDraft(String(value));
     setEditing(false);
   }
 
@@ -72,7 +139,7 @@ function EditableNumber({ value, lsKey, onChange, suffix }: EditableNumberProps)
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(String(value)); setEditing(false); } }}
-        className="bg-zinc-800 text-white rounded-lg px-2 py-0.5 text-sm w-28 outline-none focus:ring-1 focus:ring-white/30"
+        className="bg-zinc-800 text-white rounded-lg px-2 py-0.5 text-sm w-24 outline-none focus:ring-1 focus:ring-white/30"
       />
     );
   }
@@ -80,9 +147,9 @@ function EditableNumber({ value, lsKey, onChange, suffix }: EditableNumberProps)
   return (
     <button
       onClick={() => { setDraft(String(value)); setEditing(true); }}
-      className="text-white font-semibold underline decoration-dotted underline-offset-2 hover:text-zinc-300 transition-colors"
+      className="text-white font-semibold underline decoration-dotted underline-offset-2 hover:text-zinc-300 transition-colors tabular-nums"
     >
-      {fmt(value)}{suffix ? ` ${suffix}` : ""}
+      {fmt(value)}
     </button>
   );
 }
@@ -93,37 +160,58 @@ interface Props {
   totalSpent: number;
   weekBuckets: WeekBucket[];
   categoryBuckets: CategoryBucket[];
-  fxRates: { EUR: number; RUB: number; RSD: number };
+  fxRates: Record<FxCurrency, number>;
   expenses: ExpenseRow[];
 }
 
 export default function AnalyticsClient({
-  year,
-  month,
-  totalSpent,
-  weekBuckets,
-  categoryBuckets,
-  fxRates,
-  expenses,
+  year, month, totalSpent, weekBuckets, categoryBuckets, fxRates, expenses,
 }: Props) {
   const router = useRouter();
 
-  const [budget, setBudget] = useState(() => readLS(LS_BUDGET, 210600));
-  const [rent, setRent] = useState(() => readLS(LS_RENT, 800));
-  const [utilities, setUtilities] = useState(() => readLS(LS_UTILITIES, 25000));
-  const [loan, setLoan] = useState(() => readLS(LS_LOAN, 21560));
+  const [budget, setBudget] = useState(210600);
+  const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>(DEFAULT_FIXED);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newAmount, setNewAmount] = useState("");
+  const [newCurrency, setNewCurrency] = useState<FxCurrency>("RSD");
 
-  // Гидратация из localStorage после монтирования
+  // Гидратация из localStorage
   useEffect(() => {
     setBudget(readLS(LS_BUDGET, 210600));
-    setRent(readLS(LS_RENT, 800));
-    setUtilities(readLS(LS_UTILITIES, 25000));
-    setLoan(readLS(LS_LOAN, 21560));
+    setFixedExpenses(loadFixed());
   }, []);
 
-  const rentRsd = rent * fxRates.EUR;
-  const loanRsd = loan * fxRates.RUB;
-  const fixedTotal = rentRsd + utilities + loanRsd;
+  function updateFixed(items: FixedExpense[]) {
+    setFixedExpenses(items);
+    saveFixed(items);
+  }
+
+  function updateItem(id: string, patch: Partial<FixedExpense>) {
+    updateFixed(fixedExpenses.map((e) => e.id === id ? { ...e, ...patch } : e));
+  }
+
+  function deleteItem(id: string) {
+    updateFixed(fixedExpenses.filter((e) => e.id !== id));
+  }
+
+  function addItem() {
+    const amount = parseFloat(newAmount);
+    if (!newName.trim() || isNaN(amount) || amount <= 0) return;
+    const newItem: FixedExpense = {
+      id: Date.now().toString(),
+      name: newName.trim(),
+      amount,
+      currency: newCurrency,
+    };
+    updateFixed([...fixedExpenses, newItem]);
+    setNewName("");
+    setNewAmount("");
+    setNewCurrency("RSD");
+    setShowAddForm(false);
+  }
+
+  const fixedTotal = fixedExpenses.reduce((sum, e) => sum + e.amount * (fxRates[e.currency] ?? 1), 0);
   const remaining = budget - fixedTotal;
   const daysInMonth = new Date(year, month, 0).getDate();
   const dailyBudget = remaining / daysInMonth;
@@ -134,38 +222,25 @@ export default function AnalyticsClient({
     year > now.getFullYear() ||
     (year === now.getFullYear() && month >= now.getMonth() + 1);
 
-  function navigate(deltaMonth: number) {
-    let newMonth = month + deltaMonth;
-    let newYear = year;
-    if (newMonth > 12) { newMonth = 1; newYear++; }
-    if (newMonth < 1) { newMonth = 12; newYear--; }
-    router.push(`/analytics?year=${newYear}&month=${newMonth}`);
+  function navigate(delta: number) {
+    let m = month + delta, y = year;
+    if (m > 12) { m = 1; y++; }
+    if (m < 1) { m = 12; y--; }
+    router.push(`/analytics?year=${y}&month=${m}`);
   }
 
   const maxCategory = categoryBuckets[0]?.total ?? 1;
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-10">
+
       {/* Шапка */}
       <div className="flex items-center justify-between mt-2">
         <a href="/" className="text-zinc-400 text-sm hover:text-white transition-colors">← Назад</a>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-zinc-800"
-          >
-            ←
-          </button>
-          <span className="text-white font-semibold text-base">
-            {MONTH_NAMES[month - 1]} {year}
-          </span>
-          <button
-            onClick={() => navigate(1)}
-            disabled={isCurrentOrFuture}
-            className="text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-zinc-800 disabled:opacity-20 disabled:cursor-not-allowed"
-          >
-            →
-          </button>
+          <button onClick={() => navigate(-1)} className="text-zinc-400 hover:text-white px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors">←</button>
+          <span className="text-white font-semibold text-base">{MONTH_NAMES[month - 1]} {year}</span>
+          <button onClick={() => navigate(1)} disabled={isCurrentOrFuture} className="text-zinc-400 hover:text-white px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-20 disabled:cursor-not-allowed">→</button>
         </div>
         <div className="w-12" />
       </div>
@@ -174,37 +249,89 @@ export default function AnalyticsClient({
       <div className="bg-zinc-900 rounded-2xl p-4 flex flex-col gap-3">
         <p className="text-zinc-400 text-sm font-medium">Бюджет на месяц</p>
         <div className="flex items-baseline gap-2">
-          <EditableNumber value={budget} lsKey={LS_BUDGET} onChange={setBudget} />
+          <EditableNumber
+            value={budget}
+            onChange={(v) => { setBudget(v); localStorage.setItem(LS_BUDGET, String(v)); }}
+          />
           <span className="text-zinc-500 text-sm">RSD</span>
         </div>
 
+        {/* Обязательные расходы */}
         <div className="border-t border-zinc-800 pt-3 flex flex-col gap-2">
           <p className="text-zinc-500 text-xs uppercase tracking-wider mb-1">Обязательные расходы</p>
 
-          <div className="flex items-center justify-between">
-            <span className="text-zinc-400 text-sm">Аренда</span>
-            <div className="flex items-center gap-1.5">
-              <EditableNumber value={rent} lsKey={LS_RENT} onChange={setRent} suffix="EUR" />
-              <span className="text-zinc-600 text-xs">≈ {fmt(rentRsd)} RSD</span>
-            </div>
-          </div>
+          {fixedExpenses.map((item) => {
+            const inRsd = item.amount * (fxRates[item.currency] ?? 1);
+            return (
+              <div key={item.id} className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <EditableText value={item.name} onChange={(v) => updateItem(item.id, { name: v })} />
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <EditableNumber value={item.amount} onChange={(v) => updateItem(item.id, { amount: v })} />
+                  <select
+                    value={item.currency}
+                    onChange={(e) => updateItem(item.id, { currency: e.target.value as FxCurrency })}
+                    className="bg-zinc-800 text-zinc-300 text-xs rounded-lg px-1.5 py-1 outline-none border-none"
+                  >
+                    {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  {item.currency !== "RSD" && (
+                    <span className="text-zinc-600 text-xs">≈ {fmt(inRsd)} RSD</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  className="text-zinc-600 hover:text-red-400 transition-colors text-base leading-none shrink-0 px-1"
+                  aria-label="Удалить"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
 
-          <div className="flex items-center justify-between">
-            <span className="text-zinc-400 text-sm">Коммуналка</span>
-            <div className="flex items-center gap-1.5">
-              <EditableNumber value={utilities} lsKey={LS_UTILITIES} onChange={setUtilities} suffix="RSD" />
+          {/* Форма добавления */}
+          {showAddForm ? (
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                autoFocus
+                type="text"
+                placeholder="Название"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addItem(); if (e.key === "Escape") setShowAddForm(false); }}
+                className="bg-zinc-800 text-white rounded-lg px-2 py-1 text-sm flex-1 min-w-0 outline-none focus:ring-1 focus:ring-white/30 placeholder:text-zinc-600"
+              />
+              <input
+                type="number"
+                placeholder="Сумма"
+                value={newAmount}
+                onChange={(e) => setNewAmount(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addItem(); if (e.key === "Escape") setShowAddForm(false); }}
+                className="bg-zinc-800 text-white rounded-lg px-2 py-1 text-sm w-20 outline-none focus:ring-1 focus:ring-white/30 placeholder:text-zinc-600"
+              />
+              <select
+                value={newCurrency}
+                onChange={(e) => setNewCurrency(e.target.value as FxCurrency)}
+                className="bg-zinc-800 text-zinc-300 text-xs rounded-lg px-1.5 py-1.5 outline-none border-none"
+              >
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <button onClick={addItem} className="text-white bg-zinc-700 hover:bg-zinc-600 rounded-lg px-3 py-1 text-sm transition-colors">+</button>
+              <button onClick={() => setShowAddForm(false)} className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">✕</button>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-zinc-400 text-sm">Кредит</span>
-            <div className="flex items-center gap-1.5">
-              <EditableNumber value={loan} lsKey={LS_LOAN} onChange={setLoan} suffix="RUB" />
-              <span className="text-zinc-600 text-xs">≈ {fmt(loanRsd)} RSD</span>
-            </div>
-          </div>
+          ) : (
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors text-left pt-1"
+            >
+              + Добавить расход
+            </button>
+          )}
         </div>
 
+        {/* Итоги */}
         <div className="border-t border-zinc-800 pt-3 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-zinc-400 text-sm">Остаток на месяц</span>
@@ -221,7 +348,7 @@ export default function AnalyticsClient({
         </div>
       </div>
 
-      {/* Итого за месяц */}
+      {/* Потрачено за месяц */}
       <div className={`rounded-2xl p-4 flex items-center justify-between ${totalSpent > remaining ? "bg-red-950/40" : "bg-zinc-900"}`}>
         <p className="text-zinc-400 text-sm">Потрачено за месяц</p>
         <p className={`font-bold text-xl ${totalSpent > remaining ? "text-red-400" : "text-white"}`}>
@@ -237,14 +364,9 @@ export default function AnalyticsClient({
             {weekBuckets.map((w) => {
               const over = w.total > weeklyBudget && weeklyBudget > 0;
               return (
-                <div
-                  key={w.label}
-                  className={`flex items-center justify-between rounded-xl px-3 py-2 ${over ? "bg-red-950/40" : "bg-zinc-800/60"}`}
-                >
+                <div key={w.label} className={`flex items-center justify-between rounded-xl px-3 py-2 ${over ? "bg-red-950/40" : "bg-zinc-800/60"}`}>
                   <span className="text-zinc-400 text-sm">{w.label}</span>
-                  <span className={`font-semibold text-sm ${over ? "text-red-400" : "text-white"}`}>
-                    {fmt(w.total)} RSD
-                  </span>
+                  <span className={`font-semibold text-sm ${over ? "text-red-400" : "text-white"}`}>{fmt(w.total)} RSD</span>
                 </div>
               );
             })}
@@ -264,10 +386,7 @@ export default function AnalyticsClient({
                   <span className="text-white text-sm font-medium">{fmt(c.total)} RSD</span>
                 </div>
                 <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-white/30 rounded-full"
-                    style={{ width: `${(c.total / maxCategory) * 100}%` }}
-                  />
+                  <div className="h-full bg-white/30 rounded-full" style={{ width: `${(c.total / maxCategory) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -302,7 +421,7 @@ export default function AnalyticsClient({
       )}
 
       {expenses.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 gap-2">
+        <div className="flex flex-col items-center justify-center py-12">
           <p className="text-zinc-600 text-base">Нет записей за этот месяц</p>
         </div>
       )}
