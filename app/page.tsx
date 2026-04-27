@@ -23,7 +23,7 @@ export default function ExpensePage() {
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token");
-    if (token) sessionStorage.setItem("api_token", token);
+    if (token) localStorage.setItem("api_token", token);
   }, []);
 
   const amountNum = parseFloat(amount);
@@ -37,7 +37,7 @@ export default function ExpensePage() {
 
     const token =
       new URLSearchParams(window.location.search).get("token") ??
-      sessionStorage.getItem("api_token") ??
+      localStorage.getItem("api_token") ??
       "";
 
     try {
