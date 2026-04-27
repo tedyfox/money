@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errors }, { status: 422 });
   }
 
-  const d = body as { amount: number; currency: Currency; category: string; entry_date: string };
+  const d = body as { amount: number; currency: Currency; category: string; entry_date: string; note?: string };
 
   let fxRate: number;
   try {
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       entry_date: d.entry_date,
       amount_rsd: amountRsd,
       fx_rate_to_rsd: fxRate,
+      ...(d.note?.trim() ? { note: d.note.trim() } : {}),
     })
     .select("id, amount_rsd")
     .single();

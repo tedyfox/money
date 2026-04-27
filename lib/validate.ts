@@ -13,6 +13,7 @@ export interface ExpenseInput {
   currency: Currency;
   category: Category;
   entry_date: string; // ISO date string YYYY-MM-DD
+  note?: string;
 }
 
 export interface ValidationError {
@@ -44,6 +45,11 @@ export function validateExpenseInput(data: unknown): ValidationError[] {
   } else {
     const dt = new Date(d.entry_date as string);
     if (isNaN(dt.getTime())) errors.push({ field: "entry_date", message: "Некорректная дата" });
+  }
+
+  if (d.note !== undefined && d.note !== null) {
+    if (typeof d.note !== "string") errors.push({ field: "note", message: "Комментарий должен быть строкой" });
+    else if (d.note.length > 500) errors.push({ field: "note", message: "Комментарий не более 500 символов" });
   }
 
   return errors;

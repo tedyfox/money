@@ -15,6 +15,7 @@ export default function ExpensePage() {
   const [currency, setCurrency] = useState<Currency>("RSD");
   const [category, setCategory] = useState<Category | "">("");
   const [entryDate, setEntryDate] = useState(today());
+  const [note, setNote] = useState("");
   const [state, setState] = useState<FormState>("idle");
   const [savedAmountRsd, setSavedAmountRsd] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -34,7 +35,7 @@ export default function ExpensePage() {
       const res = await fetch(`/api/expenses?token=${encodeURIComponent(token)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amountNum, currency, category, entry_date: entryDate }),
+        body: JSON.stringify({ amount: amountNum, currency, category, entry_date: entryDate, ...(note.trim() ? { note: note.trim() } : {}) }),
       });
 
       if (res.status === 401) {
@@ -65,6 +66,7 @@ export default function ExpensePage() {
     setAmount("");
     setCategory("");
     setEntryDate(today());
+    setNote("");
     setState("idle");
     setSavedAmountRsd(null);
   }
@@ -155,6 +157,19 @@ export default function ExpensePage() {
           value={entryDate}
           onChange={(e) => setEntryDate(e.target.value)}
           className="bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-white/20 text-base"
+        />
+      </div>
+
+      {/* Note */}
+      <div className="flex flex-col gap-1">
+        <label className="text-zinc-400 text-sm">Комментарий <span className="text-zinc-600">(необязательно)</span></label>
+        <input
+          type="text"
+          placeholder="Например: Lidl, за ужин с Машей…"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={500}
+          className="bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none placeholder:text-zinc-700 focus:ring-2 focus:ring-white/20 text-base"
         />
       </div>
 
