@@ -4,6 +4,36 @@ import { getFxRateToRsd } from "@/lib/fx";
 import { supabase } from "@/lib/db";
 import type { Currency } from "@/lib/validate";
 
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  const now = new Date();
+  const year = parseInt(req.nextUrl.searchParams.get("year") ?? String(now.getFullYear()), 10);
+  const month = parseInt(req.nextUrl.searchParams.get("month") ?? String(now.getMonth() + 1), 10);
+
+  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+    return NextResponse.json({ error: "Некорректный год или месяц" }, { status: 400 });
+  }
+
+  const from = `${year}-${String(month).padStart(2, "0")}-01`;
+  const lastDay = new Date(year, month, 0).getDate();
+  const to = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+  const { data, error } = await supabase
+    .from("expenses")
+    .select("id, amount_rsd, category, entry_date, amount, currency, note")
+    .gte("entry_date", from)
+    .lte("entry_date", to)
+    .order("entry_date", { ascending: false });
+
+  if (error) {
+    console.error("DB error:", error);
+    return NextResponse.json({ error: "DB error" }, { status: 500 });
+  }
+
+  return NextResponse.json(data ?? []);
+}
+
 const API_TOKEN = process.env.API_TOKEN;
 
 export async function POST(req: NextRequest) {

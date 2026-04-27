@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CURRENCIES, CATEGORIES } from "@/lib/validate";
 import type { Currency, Category } from "@/lib/validate";
 
@@ -93,7 +94,12 @@ export default function ExpensePage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-10">
-      <h1 className="text-white text-2xl font-bold mt-2">Новый расход</h1>
+      <div className="flex items-center justify-between mt-2">
+        <h1 className="text-white text-2xl font-bold">Новый расход</h1>
+        <Link href="/analytics" className="text-zinc-400 text-sm hover:text-white transition-colors">
+          Аналитика →
+        </Link>
+      </div>
 
       {/* Amount */}
       <div className="flex flex-col gap-1">
