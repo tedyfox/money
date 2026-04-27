@@ -21,10 +21,30 @@ export default function ExpensePage() {
   const [savedAmountRsd, setSavedAmountRsd] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const [savedToken, setSavedToken] = useState<string | null>(null);
+  const [tokenInput, setTokenInput] = useState("");
+  const [showTokenSetup, setShowTokenSetup] = useState(false);
+
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get("token");
-    if (token) localStorage.setItem("api_token", token);
+    const urlToken = new URLSearchParams(window.location.search).get("token");
+    if (urlToken) {
+      localStorage.setItem("api_token", urlToken);
+      setSavedToken(urlToken);
+    } else {
+      const stored = localStorage.getItem("api_token");
+      setSavedToken(stored);
+      if (!stored) setShowTokenSetup(true);
+    }
   }, []);
+
+  function saveToken() {
+    const t = tokenInput.trim();
+    if (!t) return;
+    localStorage.setItem("api_token", t);
+    setSavedToken(t);
+    setShowTokenSetup(false);
+    setTokenInput("");
+  }
 
   const amountNum = parseFloat(amount);
   const isValid =
@@ -48,8 +68,10 @@ export default function ExpensePage() {
       });
 
       if (res.status === 401) {
-        setErrorMsg("Неверный токен доступа. Добавь ?token=... к URL.");
-        setState("error");
+        localStorage.removeItem("api_token");
+        setSavedToken(null);
+        setShowTokenSetup(true);
+        setState("idle");
         return;
       }
 
@@ -78,6 +100,31 @@ export default function ExpensePage() {
     setNote("");
     setState("idle");
     setSavedAmountRsd(null);
+  }
+
+  if (showTokenSetup) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 gap-4">
+        <p className="text-white text-xl font-semibold text-center">Введи токен доступа</p>
+        <p className="text-zinc-500 text-sm text-center">Нужно сделать один раз</p>
+        <input
+          autoFocus
+          type="text"
+          placeholder="Токен"
+          value={tokenInput}
+          onChange={(e) => setTokenInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") saveToken(); }}
+          className="w-full max-w-sm bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-white/20 text-base font-mono"
+        />
+        <button
+          onClick={saveToken}
+          disabled={!tokenInput.trim()}
+          className="w-full max-w-sm bg-white text-black font-semibold text-lg py-4 rounded-2xl disabled:opacity-30 active:opacity-80 transition-opacity"
+        >
+          Сохранить
+        </button>
+      </div>
+    );
   }
 
   if (state === "success") {
@@ -200,6 +247,15 @@ export default function ExpensePage() {
       >
         {state === "loading" ? "Сохраняю…" : "Сохранить"}
       </button>
+
+      {savedToken && (
+        <button
+          onClick={() => { localStorage.removeItem("api_token"); setSavedToken(null); setShowTokenSetup(true); }}
+          className="text-zinc-700 text-xs text-center"
+        >
+          Сменить токен
+        </button>
+      )}
     </div>
   );
 }
