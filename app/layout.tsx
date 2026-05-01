@@ -16,6 +16,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "transparent",
+  // cover: фон залезает за Dynamic Island и home indicator
+  viewportFit: "cover",
+  // overlays-content: клавиатура появляется поверх контента, не сжимает вьюпорт
+  interactiveWidget: "overlays-content",
 };
 
 export default function RootLayout({

@@ -184,11 +184,11 @@ export default function ExpensePage() {
      * fixed inset-0: страница не скроллится без overflow:hidden
      * (overflow:hidden ломает нативный date picker в iOS Safari)
      */
-    <main className="fixed inset-0 flex flex-col px-[8px]" style={bgStyle}>
+    <main className="fixed inset-0 flex flex-col px-[8px] overflow-hidden" style={bgStyle}>
 
       {/* Heading + аналитика */}
       <div className="relative shrink-0">
-        <h1 className="pt-[61px] font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap">
+        <h1 className="font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap" style={{ paddingTop: "max(61px, env(safe-area-inset-top))" }}>
           {"Hello,\nVika"}
         </h1>
         <Link
@@ -247,7 +247,8 @@ export default function ExpensePage() {
             setSavedToken(null);
             setShowTokenSetup(true);
           }}
-          className="absolute bottom-2 right-3 text-white/20 text-xs font-neue font-medium"
+          className="absolute right-3 text-white/20 text-xs font-neue font-medium"
+          style={{ bottom: "max(8px, env(safe-area-inset-bottom))" }}
         >
           ••• токен
         </button>
