@@ -33,24 +33,21 @@ body {
   font-family: 'PP Neue Montreal', sans-serif;
   background: #151f14;
   overscroll-behavior: none;
+  position: relative;
+  isolation: isolate;
 }
 
 /*
- * iOS PWA: fixed background layer MUST be above body (no negative z-index),
- * otherwise the home-indicator safe area can show the fallback background.
+ * iOS PWA: render background as a fixed layer without touching layout positioning.
+ * `isolation:isolate` keeps the negative z-index contained inside body.
  */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background: url(/bg.jpg) center / cover no-repeat;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
-}
-
-body > * {
-  position: relative;
-  z-index: 1;
 }
 
 /* iOS Safari/PWA: reliable full-height background (home indicator area) */
