@@ -38,18 +38,18 @@ body {
 }
 
 /*
- * iOS PWA standalone: 100dvh/100svh/-webkit-fill-available are BROKEN
- * (WebKit bug #254868) — they report a viewport that's ~34px SHORTER
- * than the screen. Confirmed workaround: use 100vh in standalone.
- * --app-height is set by JS using navigator.standalone, which is the
- * authoritative check (display-mode media query is unreliable on iOS).
+ * iOS PWA standalone (WebKit bug #254868): 100dvh / 100svh /
+ * -webkit-fill-available / window.innerHeight all return a value that
+ * is ~59px SHORTER than the screen. Only 100vh and 100lvh return the
+ * full physical screen height, so we use those here.
  */
 .app-bg {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: var(--app-height, 100vh);
+  height: 100vh;
+  height: 100lvh;
   background: url(/bg.jpg) center / cover no-repeat;
   z-index: -1;
   pointer-events: none;

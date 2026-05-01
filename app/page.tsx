@@ -16,65 +16,6 @@ function today(): string {
 
 type FormState = "idle" | "loading" | "success" | "error";
 
-function DiagnosticsBadge() {
-  const [info, setInfo] = useState<string>("…");
-  useEffect(() => {
-    const update = () => {
-      const sa = (k: string) =>
-        getComputedStyle(document.documentElement).getPropertyValue(k).trim() ||
-        "?";
-      const root = document.documentElement;
-      const probe = document.createElement("div");
-      probe.style.cssText =
-        "position:fixed;top:0;left:0;width:1px;height:100vh;visibility:hidden;";
-      document.body.appendChild(probe);
-      const vh100 = probe.getBoundingClientRect().height;
-      probe.style.height = "100dvh";
-      const dvh100 = probe.getBoundingClientRect().height;
-      probe.style.height = "100lvh";
-      const lvh100 = probe.getBoundingClientRect().height;
-      probe.style.height = "100svh";
-      const svh100 = probe.getBoundingClientRect().height;
-      probe.remove();
-
-      const standalone =
-        // @ts-expect-error iOS Safari
-        window.navigator.standalone === true ||
-        window.matchMedia("(display-mode: standalone)").matches;
-
-      setInfo(
-        [
-          `sa=${standalone ? "Y" : "N"}`,
-          `iH=${window.innerHeight}`,
-          `scr=${window.screen.height}`,
-          `cH=${root.clientHeight}`,
-          `vh=${Math.round(vh100)}`,
-          `dvh=${Math.round(dvh100)}`,
-          `lvh=${Math.round(lvh100)}`,
-          `svh=${Math.round(svh100)}`,
-          `sai-t=${sa("--xx")}`,
-          `top=${getComputedStyle(root).getPropertyValue("--sai-top") || "?"}`,
-        ].join(" | ")
-      );
-    };
-    update();
-    window.addEventListener("resize", update);
-    window.addEventListener("orientationchange", update);
-    return () => {
-      window.removeEventListener("resize", update);
-      window.removeEventListener("orientationchange", update);
-    };
-  }, []);
-  return (
-    <div
-      className="fixed left-0 right-0 text-[10px] font-neue text-white bg-black/70 px-2 py-1 leading-tight"
-      style={{ bottom: 0, zIndex: 1000, wordBreak: "break-all" }}
-    >
-      {info}
-    </div>
-  );
-}
-
 export default function ExpensePage() {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<Currency>("RSD");
@@ -294,7 +235,7 @@ export default function ExpensePage() {
 
       {/* Скрытая кнопка смены токена */}
       <span className="absolute left-3 text-black text-xs font-neue font-medium" style={{ bottom: "8px", zIndex: 10 }}>
-        v29
+        v30
       </span>
       {savedToken && (
         <button
@@ -309,7 +250,6 @@ export default function ExpensePage() {
           ••• токен
         </button>
       )}
-      <DiagnosticsBadge />
     </main>
   );
 }
