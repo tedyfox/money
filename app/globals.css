@@ -24,33 +24,15 @@ html {
   height: 100%;
   min-height: 100svh;
   min-height: 100dvh;
-  background: #151f14;
+  background: #ff0000;
   overscroll-behavior: none;
 }
 
 body {
   height: 100%;
   font-family: 'PP Neue Montreal', sans-serif;
-  background: #151f14;
+  background: #ff0000;
   overscroll-behavior: none;
   position: relative;
   isolation: isolate;
-}
-
-/*
- * iOS PWA standalone (WebKit bug #254868): 100dvh / 100svh /
- * -webkit-fill-available / window.innerHeight all return a value that
- * is ~59px SHORTER than the screen. Only 100vh and 100lvh return the
- * full physical screen height, so we use those here.
- */
-.app-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100lvh;
-  background: url(/bg.jpg) center / cover no-repeat;
-  z-index: -1;
-  pointer-events: none;
 }
