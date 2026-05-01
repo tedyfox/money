@@ -237,7 +237,7 @@ export default function ExpensePage() {
       </div>
 
       {/* Скрытая кнопка смены токена */}
-      <span className="absolute left-3 text-white/60 text-xs font-neue font-medium" style={{ bottom: "8px", zIndex: 10 }}>
+      <span className="absolute left-3 text-black text-xs font-neue font-medium" style={{ bottom: "8px", zIndex: 10 }}>
         v15
       </span>
       {savedToken && (
