@@ -22,7 +22,7 @@
 
 html {
   min-height: 100dvh;
-  background: #151f14 url(/bg.jpg) center/cover no-repeat;
+  background: #151f14;
   overscroll-behavior: none;
 }
 
@@ -30,4 +30,12 @@ body {
   font-family: 'PP Neue Montreal', sans-serif;
   background: transparent;
   overscroll-behavior: none;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url(/bg.jpg) center / cover no-repeat;
+  z-index: -1;
 }
