@@ -389,7 +389,7 @@ export default function AnalyticsClient({
   }
 
   async function handleSaveEdit(id: string, data: EditData) {
-    const token = localStorage.getItem("api_token");
+    const token = encodeURIComponent(localStorage.getItem("api_token") ?? "");
     setSavingId(id);
     try {
       const res = await fetch(`/api/expenses/${id}?token=${token}`, {
@@ -397,26 +397,27 @@ export default function AnalyticsClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("PUT failed");
+      if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
       const updated: ExpenseRow = await res.json();
       setLocalExpenses((prev) => prev.map((e) => e.id === id ? updated : e));
       setEditingId(null);
-    } catch {
-      // keep edit mode open on error
+    } catch (err) {
+      console.error("handleSaveEdit:", err);
     } finally {
       setSavingId(null);
     }
   }
 
   async function handleDeleteExpense(id: string) {
-    const token = localStorage.getItem("api_token");
+    const token = encodeURIComponent(localStorage.getItem("api_token") ?? "");
     const idx = localExpenses.findIndex((e) => e.id === id);
     const removed = localExpenses[idx];
     setLocalExpenses((prev) => prev.filter((e) => e.id !== id));
     try {
       const res = await fetch(`/api/expenses/${id}?token=${token}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("DELETE failed");
-    } catch {
+      if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+    } catch (err) {
+      console.error("handleDeleteExpense:", err);
       setLocalExpenses((prev) => [...prev.slice(0, idx), removed, ...prev.slice(idx)]);
     }
   }
