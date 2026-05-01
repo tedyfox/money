@@ -21,6 +21,7 @@
 }
 
 html {
+  min-height: 100%;
   height: 100vh;
   height: 100lvh;
   background: #151f14 url(/bg.jpg) center / cover no-repeat;
@@ -28,11 +29,10 @@ html {
 }
 
 body {
+  min-height: 100%;
   height: 100vh;
   height: 100lvh;
   font-family: 'PP Neue Montreal', sans-serif;
   background: transparent;
   overscroll-behavior: none;
-  position: relative;
-  isolation: isolate;
 }

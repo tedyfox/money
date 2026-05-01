@@ -227,15 +227,18 @@ export default function ExpensePage() {
       {/* Комментарий + Save */}
       <div
         className="flex gap-[8px] items-start shrink-0"
-        style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "max(46px, calc(env(safe-area-inset-bottom) + 16px))" }}
       >
         <CommentInput value={note} onChange={setNote} />
         <SaveButton onPress={handleSubmit} loading={state === "loading"} />
       </div>
 
       {/* Скрытая кнопка смены токена */}
-      <span className="absolute left-3 text-black text-xs font-neue font-medium" style={{ bottom: "8px", zIndex: 10 }}>
-        v32
+      <span
+        className="absolute left-3 text-black text-xs font-neue font-medium"
+        style={{ bottom: "calc(8px + env(safe-area-inset-bottom) + 16px)", zIndex: 10 }}
+      >
+        v33
       </span>
       {savedToken && (
         <button
@@ -245,7 +248,7 @@ export default function ExpensePage() {
             setShowTokenSetup(true);
           }}
           className="absolute right-3 text-white/20 text-xs font-neue font-medium"
-          style={{ bottom: "8px" }}
+          style={{ bottom: "calc(8px + env(safe-area-inset-bottom) + 16px)" }}
         >
           ••• токен
         </button>
