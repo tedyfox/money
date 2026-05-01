@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ff0000",
+  themeColor: "#151f14",
   // cover: фон залезает за Dynamic Island и home indicator
   viewportFit: "cover",
 };
