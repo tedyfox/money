@@ -20,8 +20,14 @@
   --font-neue: 'PP Neue Montreal', sans-serif;
 }
 
-html, body {
+html {
+  height: 100dvh;
+  background: #151f14 url(/bg.jpg) center/cover no-repeat;
+  overscroll-behavior: none;
+}
+
+body {
   font-family: 'PP Neue Montreal', sans-serif;
-  background: #151f14;
+  background: transparent;
   overscroll-behavior: none;
 }
