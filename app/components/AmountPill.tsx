@@ -10,9 +10,17 @@ interface Props {
   onAmountChange: (v: string) => void;
   onCurrencyChange: (c: Currency) => void;
   showError?: boolean;
+  autoFocus?: boolean;
 }
 
-export default function AmountPill({ amount, currency, onAmountChange, onCurrencyChange, showError }: Props) {
+export default function AmountPill({
+  amount,
+  currency,
+  onAmountChange,
+  onCurrencyChange,
+  showError,
+  autoFocus,
+}: Props) {
   const [showPicker, setShowPicker] = useState(false);
 
   return (
@@ -38,6 +46,7 @@ export default function AmountPill({ amount, currency, onAmountChange, onCurrenc
           placeholder="0"
           value={amount}
           onChange={(e) => onAmountChange(e.target.value)}
+          autoFocus={autoFocus}
           className="absolute top-[15px] bottom-[15px] left-[84px] right-[20px] text-[48px] font-neue font-medium leading-none text-black outline-none bg-transparent placeholder:text-black/30"
         />
       </div>
