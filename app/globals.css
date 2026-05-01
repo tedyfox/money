@@ -37,9 +37,11 @@ body {
   overscroll-behavior: none;
 }
 
-/* Активный цвет табов — сверь с Figma node 17-217 */
+/* Figma node 17:217 — Tab Bar - iPhone (labels / selection) */
 .floating-section-nav {
-  --tab-active-fg: #c9b8ff;
+  --tab-active-fg: #08f;
+  --tab-inactive-fg: #1a1a1a;
+  --tab-selection-bg: #ededed;
 }
 
 @media (prefers-reduced-motion: no-preference) {
