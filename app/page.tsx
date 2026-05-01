@@ -237,6 +237,9 @@ export default function ExpensePage() {
       </div>
 
       {/* Скрытая кнопка смены токена */}
+      <span className="absolute left-3 text-white/20 text-xs font-neue font-medium" style={{ bottom: "8px" }}>
+        v15
+      </span>
       {savedToken && (
         <button
           onClick={() => {
