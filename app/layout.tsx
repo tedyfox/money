@@ -29,7 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div aria-hidden className="app-bg" />
+        {children}
+      </body>
     </html>
   );
 }

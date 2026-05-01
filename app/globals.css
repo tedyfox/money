@@ -38,25 +38,32 @@ body {
 }
 
 /*
- * iOS PWA: render background as a fixed layer without touching layout positioning.
- * `isolation:isolate` keeps the negative z-index contained inside body.
+ * Full-screen background layer.
+ * Uses real <div> (not pseudo-element) and explicit viewport heights
+ * to reliably cover the iOS home-indicator safe area in PWA standalone.
  */
-body::before {
-  content: '';
+.app-bg {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
   background: url(/bg.jpg) center / cover no-repeat;
   z-index: -1;
   pointer-events: none;
 }
 
-/* iOS Safari/PWA: reliable full-height background (home indicator area) */
+/* iOS Safari/PWA: reliable full-height fallback for older WebKit */
 @supports (-webkit-touch-callout: none) {
-  html {
-    height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
-  }
+  html,
   body {
     min-height: -webkit-fill-available;
+  }
+  .app-bg {
+    height: -webkit-fill-available;
   }
 }
