@@ -232,10 +232,13 @@ export default function AnalyticsClient({
   const maxCategory = categoryBuckets[0]?.total ?? 1;
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-10">
+    <div
+      className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-10"
+      style={{ paddingTop: "max(20px, env(safe-area-inset-top))" }}
+    >
 
       {/* Шапка */}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between">
         <a href="/" className="text-zinc-400 text-sm hover:text-white transition-colors">← Назад</a>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-zinc-400 hover:text-white px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors">←</button>

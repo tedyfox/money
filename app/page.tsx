@@ -243,7 +243,7 @@ export default function ExpensePage() {
         className="absolute left-3 text-black text-xs font-neue font-medium"
         style={{ bottom: "24px", zIndex: 10 }}
       >
-        v36
+        v37
       </span>
       {savedToken && (
         <button
