@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import RouteEnter from "./components/RouteEnter";
 
 export const metadata: Metadata = {
   title: "Расходы",
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="ru" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <RouteEnter />
         {children}
       </body>
     </html>
