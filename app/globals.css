@@ -22,7 +22,6 @@
 
 html, body {
   font-family: 'PP Neue Montreal', sans-serif;
-  background: #151f14;
-  height: 100%;
   overflow: hidden;
+  background: #151f14 url(/bg.jpg) center/cover no-repeat;
 }
