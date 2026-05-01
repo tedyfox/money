@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { CURRENCIES, CATEGORIES } from "@/lib/validate";
 import type { Currency, Category } from "@/lib/validate";
+import FloatingSectionNav from "./components/FloatingSectionNav";
 import DateBadge from "./components/DateBadge";
 import AmountPill from "./components/AmountPill";
 import CategoryPills from "./components/CategoryPills";
@@ -124,7 +124,6 @@ export default function ExpensePage() {
     setShowErrors(false);
   }
 
-  // ⚠️ Figma: нет экрана токена
   if (showTokenSetup) {
     return (
       <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-4">
@@ -152,7 +151,6 @@ export default function ExpensePage() {
     );
   }
 
-  // ⚠️ Figma: нет экрана успеха
   if (state === "success") {
     return (
       <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-6">
@@ -173,6 +171,7 @@ export default function ExpensePage() {
             Добавить ещё
           </button>
         </div>
+        <FloatingSectionNav active="add" />
       </main>
     );
   }
@@ -183,22 +182,12 @@ export default function ExpensePage() {
      * (overflow:hidden ломает нативный date picker в iOS Safari)
      */
     <main className="fixed inset-0 flex flex-col px-[8px]">
-
-      {/* Heading + аналитика */}
       <div className="relative shrink-0">
         <h1 className="font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap" style={{ paddingTop: "max(61px, env(safe-area-inset-top))" }}>
           {"Hello,\nVika"}
         </h1>
-        <Link
-          href="/analytics"
-          className="absolute right-0 text-white/40 text-xs font-neue font-medium px-1 py-1"
-          style={{ top: "max(16px, env(safe-area-inset-top))" }}
-        >
-          аналитика →
-        </Link>
       </div>
 
-      {/* Дата + сумма */}
       <div className="mt-[77px] flex gap-[4px] shrink-0">
         <DateBadge date={entryDate} onChange={setEntryDate} />
         <AmountPill
@@ -210,18 +199,15 @@ export default function ExpensePage() {
         />
       </div>
 
-      {/* ⚠️ Figma: нет error-состояния сервера */}
       {state === "error" && (
         <p className="mt-[8px] shrink-0 text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
       )}
 
-      {/* Категории */}
       <div className="mt-[16px] flex-1">
         <CategoryPills
           selected={category}
           onSelect={(c) => { setCategory(c === category ? "" : c); if (showErrors) setShowErrors(false); }}
         />
-        {/* ⚠️ Figma: нет ошибки валидации — подсказка при незаполненной категории */}
         {showErrors && !category && (
           <p className="mt-[8px] text-white/70 text-sm font-neue font-medium text-center">
             Выбери категорию
@@ -229,19 +215,17 @@ export default function ExpensePage() {
         )}
       </div>
 
-      {/* Комментарий + Save */}
       <div
         className="flex gap-[8px] items-start shrink-0"
-        style={{ paddingBottom: "calc(max(30px, env(safe-area-inset-bottom)) + 16px)" }}
+        style={{ paddingBottom: "calc(max(30px, env(safe-area-inset-bottom)) + 88px)" }}
       >
         <CommentInput value={note} onChange={setNote} />
         <SaveButton onPress={handleSubmit} loading={state === "loading"} />
       </div>
 
-      {/* Скрытая кнопка смены токена */}
       <span
-        className="absolute left-3 text-black text-xs font-neue font-medium"
-        style={{ bottom: "24px", zIndex: 10 }}
+        className="absolute left-3 text-black text-xs font-neue font-medium z-10"
+        style={{ bottom: "max(100px, calc(88px + env(safe-area-inset-bottom, 0px)))" }}
       >
         v39
       </span>
@@ -252,12 +236,13 @@ export default function ExpensePage() {
             setSavedToken(null);
             setShowTokenSetup(true);
           }}
-          className="absolute right-3 text-white/20 text-xs font-neue font-medium"
-          style={{ bottom: "24px" }}
+          className="absolute right-3 text-white/20 text-xs font-neue font-medium z-10"
+          style={{ bottom: "max(24px, env(safe-area-inset-bottom, 0px))" }}
         >
           ••• токен
         </button>
       )}
+      <FloatingSectionNav active="add" />
     </main>
   );
 }
