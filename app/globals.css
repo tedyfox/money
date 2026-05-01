@@ -38,26 +38,19 @@ body {
 }
 
 /*
- * Full-screen background layer.
- * Overshoots the viewport in every direction so that even if iOS PWA
- * shrinks the layout viewport above the home indicator, the bg image
- * still paints behind it.
+ * iOS PWA standalone: 100dvh/100svh/-webkit-fill-available are BROKEN
+ * (WebKit bug #254868) — they report a viewport that's ~34px SHORTER
+ * than the screen. Confirmed workaround: use 100vh in standalone.
+ * --app-height is set by JS using navigator.standalone, which is the
+ * authoritative check (display-mode media query is unreliable on iOS).
  */
 .app-bg {
   position: fixed;
-  top: -200px;
-  left: -200px;
-  right: -200px;
-  bottom: -200px;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: var(--app-height, 100vh);
   background: url(/bg.jpg) center / cover no-repeat;
-  background-attachment: fixed;
   z-index: -1;
   pointer-events: none;
-}
-
-@supports (-webkit-touch-callout: none) {
-  html,
-  body {
-    min-height: -webkit-fill-available;
-  }
 }
