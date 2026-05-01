@@ -16,18 +16,6 @@ function today(): string {
 
 type FormState = "idle" | "loading" | "success" | "error";
 
-/* position: fixed — bg всегда покрывает вьюпорт включая оверскролл на iOS */
-function Background() {
-  return (
-    <img
-      src="/bg.jpg"
-      alt=""
-      aria-hidden
-      className="fixed inset-0 w-full h-full object-cover pointer-events-none select-none -z-10"
-    />
-  );
-}
-
 export default function ExpensePage() {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<Currency>("RSD");
@@ -37,6 +25,7 @@ export default function ExpensePage() {
   const [state, setState] = useState<FormState>("idle");
   const [savedAmountRsd, setSavedAmountRsd] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showErrors, setShowErrors] = useState(false);
 
   const [savedToken, setSavedToken] = useState<string | null>(null);
   const [tokenInput, setTokenInput] = useState("");
@@ -64,11 +53,15 @@ export default function ExpensePage() {
   }
 
   const amountNum = parseFloat(amount);
-  const isValid =
-    amount !== "" && !isNaN(amountNum) && amountNum > 0 && category !== "" && entryDate !== "";
+  const amountValid = amount !== "" && !isNaN(amountNum) && amountNum > 0;
+  const isValid = amountValid && category !== "" && entryDate !== "";
 
   async function handleSubmit() {
-    if (!isValid) return;
+    if (!isValid) {
+      setShowErrors(true);
+      return;
+    }
+    setShowErrors(false);
     setState("loading");
     setErrorMsg("");
 
@@ -123,13 +116,20 @@ export default function ExpensePage() {
     setNote("");
     setState("idle");
     setSavedAmountRsd(null);
+    setShowErrors(false);
   }
+
+  // background-image на main: избегаем z-index/fixed проблем с img-тегом
+  const bgStyle = {
+    backgroundImage: "url(/bg.jpg)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
 
   // ⚠️ Figma: нет экрана токена
   if (showTokenSetup) {
     return (
-      <div className="relative h-dvh flex flex-col items-center justify-center p-6 gap-4 overflow-hidden">
-        <Background />
+      <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-4" style={bgStyle}>
         <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
           <p className="text-white text-xl font-neue font-bold text-center">Введи токен доступа</p>
           <p className="text-white/60 text-sm font-neue font-medium text-center">Нужно сделать один раз</p>
@@ -150,16 +150,15 @@ export default function ExpensePage() {
             Сохранить
           </button>
         </div>
-      </div>
+      </main>
     );
   }
 
   // ⚠️ Figma: нет экрана успеха
   if (state === "success") {
     return (
-      <div className="relative h-dvh flex flex-col items-center justify-center p-6 gap-6 overflow-hidden">
-        <Background />
-        <div className="relative z-10 flex flex-col items-center gap-4">
+      <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-6" style={bgStyle}>
+        <div className="flex flex-col items-center gap-4">
           <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
             ✓
           </div>
@@ -176,63 +175,68 @@ export default function ExpensePage() {
             Добавить ещё
           </button>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    /* h-dvh + overflow-hidden: страница не скроллится ни по горизонтали, ни по вертикали */
-    <main className="relative h-dvh overflow-hidden">
-      <Background />
+    /*
+     * fixed inset-0: страница не скроллится без overflow:hidden
+     * (overflow:hidden ломает нативный date picker в iOS Safari)
+     */
+    <main className="fixed inset-0 flex flex-col px-[8px]" style={bgStyle}>
 
-      <div className="relative h-full flex flex-col px-[8px]">
-
-        {/* Heading + аналитика */}
-        <div className="relative shrink-0">
-          <h1 className="pt-[61px] font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap">
-            {"Hello,\nVika"}
-          </h1>
-          <Link
-            href="/analytics"
-            className="absolute top-[16px] right-0 text-white/40 text-xs font-neue font-medium px-1 py-1"
-          >
-            аналитика →
-          </Link>
-        </div>
-
-        {/* Дата + сумма */}
-        <div className="mt-[77px] flex gap-[4px] shrink-0">
-          <DateBadge date={entryDate} onChange={setEntryDate} />
-          <AmountPill
-            amount={amount}
-            currency={currency}
-            onAmountChange={setAmount}
-            onCurrencyChange={setCurrency}
-          />
-        </div>
-
-        {/* ⚠️ Figma: нет error-состояния */}
-        {state === "error" && (
-          <p className="mt-[8px] shrink-0 text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
-        )}
-
-        {/* Категории — flex-1, overflow-hidden чтобы не скроллило всю страницу */}
-        <div className="mt-[16px] flex-1 overflow-hidden">
-          <CategoryPills
-            selected={category}
-            /* повторный тап на выбранную категорию снимает выделение */
-            onSelect={(c) => setCategory(c === category ? "" : c)}
-          />
-        </div>
-
-        {/* Комментарий + Save — items-start т.к. высота разная (140 vs 144) */}
-        <div
-          className="flex gap-[8px] items-start shrink-0"
-          style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}
+      {/* Heading + аналитика */}
+      <div className="relative shrink-0">
+        <h1 className="pt-[61px] font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap">
+          {"Hello,\nVika"}
+        </h1>
+        <Link
+          href="/analytics"
+          className="absolute top-[16px] right-0 text-white/40 text-xs font-neue font-medium px-1 py-1"
         >
-          <CommentInput value={note} onChange={setNote} />
-          <SaveButton onPress={handleSubmit} disabled={!isValid} loading={state === "loading"} />
-        </div>
+          аналитика →
+        </Link>
+      </div>
+
+      {/* Дата + сумма */}
+      <div className="mt-[77px] flex gap-[4px] shrink-0">
+        <DateBadge date={entryDate} onChange={setEntryDate} />
+        <AmountPill
+          amount={amount}
+          currency={currency}
+          onAmountChange={(v) => { setAmount(v); if (showErrors) setShowErrors(false); }}
+          onCurrencyChange={setCurrency}
+          showError={showErrors && !amountValid}
+        />
+      </div>
+
+      {/* ⚠️ Figma: нет error-состояния сервера */}
+      {state === "error" && (
+        <p className="mt-[8px] shrink-0 text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
+      )}
+
+      {/* Категории */}
+      <div className="mt-[16px] flex-1">
+        <CategoryPills
+          selected={category}
+          onSelect={(c) => { setCategory(c === category ? "" : c); if (showErrors) setShowErrors(false); }}
+        />
+        {/* ⚠️ Figma: нет ошибки валидации — подсказка при незаполненной категории */}
+        {showErrors && !category && (
+          <p className="mt-[8px] text-white/70 text-sm font-neue font-medium text-center">
+            Выбери категорию
+          </p>
+        )}
+      </div>
+
+      {/* Комментарий + Save */}
+      <div
+        className="flex gap-[8px] items-start shrink-0"
+        style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}
+      >
+        <CommentInput value={note} onChange={setNote} />
+        <SaveButton onPress={handleSubmit} loading={state === "loading"} />
       </div>
 
       {/* Скрытая кнопка смены токена */}

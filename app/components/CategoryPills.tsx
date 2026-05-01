@@ -8,7 +8,7 @@ interface Props {
 
 export default function CategoryPills({ selected, onSelect }: Props) {
   return (
-    <div className="flex flex-wrap gap-[4px]">
+    <div className="flex flex-wrap gap-[4px] justify-center">
       {CATEGORIES.map((cat) => (
         <button
           key={cat}

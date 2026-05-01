@@ -9,9 +9,10 @@ interface Props {
   currency: Currency;
   onAmountChange: (v: string) => void;
   onCurrencyChange: (c: Currency) => void;
+  showError?: boolean;
 }
 
-export default function AmountPill({ amount, currency, onAmountChange, onCurrencyChange }: Props) {
+export default function AmountPill({ amount, currency, onAmountChange, onCurrencyChange, showError }: Props) {
   const [showPicker, setShowPicker] = useState(false);
 
   return (
@@ -19,7 +20,10 @@ export default function AmountPill({ amount, currency, onAmountChange, onCurrenc
       {/* Pill — using absolute positioning matching Figma exactly:
           currency at top-32, left-20 (inner area top 15px + mt-17 = 32px)
           amount at top-15, left-84 (inner area top 15px + ml-64 = 84px) */}
-      <div className="h-[80px] bg-white rounded-full relative">
+      <div
+        className="h-[80px] bg-white rounded-full relative"
+        style={showError ? { boxShadow: "0 0 0 3px #ff3a34" } : undefined}
+      >
         <button
           type="button"
           onClick={() => setShowPicker(true)}
