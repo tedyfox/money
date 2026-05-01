@@ -39,31 +39,25 @@ body {
 
 /*
  * Full-screen background layer.
- * Uses real <div> (not pseudo-element) and explicit viewport heights
- * to reliably cover the iOS home-indicator safe area in PWA standalone.
+ * Overshoots the viewport in every direction so that even if iOS PWA
+ * shrinks the layout viewport above the home indicator, the bg image
+ * still paints behind it.
  */
 .app-bg {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100svh;
-  height: 100dvh;
+  top: -200px;
+  left: -200px;
+  right: -200px;
+  bottom: -200px;
   background: url(/bg.jpg) center / cover no-repeat;
+  background-attachment: fixed;
   z-index: -1;
   pointer-events: none;
 }
 
-/* iOS Safari/PWA: reliable full-height fallback for older WebKit */
 @supports (-webkit-touch-callout: none) {
   html,
   body {
     min-height: -webkit-fill-available;
-  }
-  .app-bg {
-    height: -webkit-fill-available;
   }
 }
