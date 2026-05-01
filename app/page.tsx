@@ -1,15 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { CURRENCIES, CATEGORIES } from "@/lib/validate";
 import type { Currency, Category } from "@/lib/validate";
+import DateBadge from "./components/DateBadge";
+import AmountPill from "./components/AmountPill";
+import CategoryPills from "./components/CategoryPills";
+import CommentInput from "./components/CommentInput";
+import SaveButton from "./components/SaveButton";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
 type FormState = "idle" | "loading" | "success" | "error";
+
+function Background() {
+  return (
+    <img
+      src="/bg.jpg"
+      alt=""
+      aria-hidden
+      className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+    />
+  );
+}
 
 export default function ExpensePage() {
   const [amount, setAmount] = useState("");
@@ -64,7 +79,13 @@ export default function ExpensePage() {
       const res = await fetch(`/api/expenses?token=${encodeURIComponent(token)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amountNum, currency, category, entry_date: entryDate, ...(note.trim() ? { note: note.trim() } : {}) }),
+        body: JSON.stringify({
+          amount: amountNum,
+          currency,
+          category,
+          entry_date: entryDate,
+          ...(note.trim() ? { note: note.trim() } : {}),
+        }),
       });
 
       if (res.status === 401) {
@@ -102,160 +123,115 @@ export default function ExpensePage() {
     setSavedAmountRsd(null);
   }
 
+  // ⚠️ Figma: нет экрана токена — оформлен в том же стиле
   if (showTokenSetup) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 gap-4">
-        <p className="text-white text-xl font-semibold text-center">Введи токен доступа</p>
-        <p className="text-zinc-500 text-sm text-center">Нужно сделать один раз</p>
-        <input
-          autoFocus
-          type="text"
-          placeholder="Токен"
-          value={tokenInput}
-          onChange={(e) => setTokenInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") saveToken(); }}
-          className="w-full max-w-sm bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-white/20 text-base font-mono"
-        />
-        <button
-          onClick={saveToken}
-          disabled={!tokenInput.trim()}
-          className="w-full max-w-sm bg-white text-black font-semibold text-lg py-4 rounded-2xl disabled:opacity-30 active:opacity-80 transition-opacity"
-        >
-          Сохранить
-        </button>
+      <div className="relative min-h-dvh flex flex-col items-center justify-center p-6 gap-4">
+        <Background />
+        <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
+          <p className="text-white text-xl font-neue font-bold text-center">Введи токен доступа</p>
+          <p className="text-white/60 text-sm font-neue font-medium text-center">Нужно сделать один раз</p>
+          <input
+            autoFocus
+            type="text"
+            placeholder="Токен"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") saveToken(); }}
+            className="w-full bg-white/20 backdrop-blur text-white rounded-2xl px-5 py-4 outline-none placeholder:text-white/40 font-neue font-medium text-base"
+          />
+          <button
+            onClick={saveToken}
+            disabled={!tokenInput.trim()}
+            className="w-full bg-white text-black font-neue font-bold text-lg py-4 rounded-2xl disabled:opacity-30 active:opacity-80 transition-opacity"
+          >
+            Сохранить
+          </button>
+        </div>
       </div>
     );
   }
 
+  // ⚠️ Figma: нет экрана успеха — оформлен в том же стиле
   if (state === "success") {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 gap-6">
-        <div className="text-6xl">✓</div>
-        <p className="text-white text-xl font-medium text-center">Расход сохранён</p>
-        {savedAmountRsd !== null && (
-          <p className="text-zinc-400 text-base text-center">
-            ≈ {savedAmountRsd.toLocaleString("ru-RU")} RSD
-          </p>
-        )}
-        <button
-          onClick={handleAddMore}
-          className="mt-4 w-full max-w-sm bg-white text-black font-semibold text-lg py-4 rounded-2xl active:opacity-80"
-        >
-          Добавить ещё
-        </button>
+      <div className="relative min-h-dvh flex flex-col items-center justify-center p-6 gap-6">
+        <Background />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
+            ✓
+          </div>
+          <p className="text-white text-xl font-neue font-bold text-center">Расход сохранён</p>
+          {savedAmountRsd !== null && (
+            <p className="text-white/70 text-base font-neue font-medium text-center">
+              ≈ {savedAmountRsd.toLocaleString("ru-RU")} RSD
+            </p>
+          )}
+          <button
+            onClick={handleAddMore}
+            className="mt-4 bg-white text-black font-neue font-bold text-lg px-8 py-4 rounded-full active:opacity-80"
+          >
+            Добавить ещё
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-10">
-      <div className="flex items-center justify-between mt-2">
-        <h1 className="text-white text-2xl font-bold">Новый расход</h1>
-        <Link href="/analytics" className="text-zinc-400 text-sm hover:text-white transition-colors">
-          Аналитика →
-        </Link>
-      </div>
+    <main className="relative min-h-dvh">
+      <Background />
 
-      {/* Amount */}
-      <div className="flex flex-col gap-1">
-        <label className="text-zinc-400 text-sm">Сумма</label>
-        <input
-          type="number"
-          inputMode="decimal"
-          autoFocus
-          placeholder="0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="bg-zinc-900 text-white text-3xl font-semibold rounded-2xl px-5 py-4 outline-none placeholder:text-zinc-700 focus:ring-2 focus:ring-white/20"
-        />
-      </div>
+      <div className="relative flex flex-col min-h-dvh px-[8px]">
+        {/* Heading */}
+        <h1 className="pt-[61px] font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap">
+          {"Hello,\nVika"}
+        </h1>
 
-      {/* Currency pills */}
-      <div className="flex flex-col gap-1">
-        <label className="text-zinc-400 text-sm">Валюта</label>
-        <div className="flex gap-2 flex-wrap">
-          {CURRENCIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCurrency(c)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                currency === c
-                  ? "bg-white text-black"
-                  : "bg-zinc-800 text-zinc-300 active:bg-zinc-700"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+        {/* Date badge + Amount pill */}
+        <div className="mt-[77px] flex gap-[4px]">
+          <DateBadge date={entryDate} onChange={setEntryDate} />
+          <AmountPill
+            amount={amount}
+            currency={currency}
+            onAmountChange={setAmount}
+            onCurrencyChange={setCurrency}
+          />
+        </div>
+
+        {/* ⚠️ Figma: нет error-состояния */}
+        {state === "error" && (
+          <p className="mt-[8px] text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
+        )}
+
+        {/* Category pills */}
+        <div className="mt-[16px]">
+          <CategoryPills selected={category} onSelect={setCategory} />
+        </div>
+
+        {/* Push bottom content down */}
+        <div className="flex-1 min-h-[16px]" />
+
+        {/* Comment + Save */}
+        <div className="flex gap-[8px]" style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}>
+          <CommentInput value={note} onChange={setNote} />
+          <SaveButton onPress={handleSubmit} disabled={!isValid} loading={state === "loading"} />
         </div>
       </div>
 
-      {/* Category grid */}
-      <div className="flex flex-col gap-1">
-        <label className="text-zinc-400 text-sm">Категория</label>
-        <div className="grid grid-cols-2 gap-2">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                category === cat
-                  ? "bg-white text-black"
-                  : "bg-zinc-900 text-zinc-300 active:bg-zinc-800"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Date */}
-      <div className="flex flex-col gap-1">
-        <label className="text-zinc-400 text-sm">Дата</label>
-        <input
-          type="date"
-          value={entryDate}
-          onChange={(e) => setEntryDate(e.target.value)}
-          className="bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-white/20 text-base"
-        />
-      </div>
-
-      {/* Note */}
-      <div className="flex flex-col gap-1">
-        <label className="text-zinc-400 text-sm">Комментарий <span className="text-zinc-600">(необязательно)</span></label>
-        <input
-          type="text"
-          placeholder="Например: Lidl, за ужин с Машей…"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          maxLength={500}
-          className="bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none placeholder:text-zinc-700 focus:ring-2 focus:ring-white/20 text-base"
-        />
-      </div>
-
-      {/* Error */}
-      {state === "error" && (
-        <p className="text-red-400 text-sm bg-red-950/40 rounded-xl px-4 py-3">{errorMsg}</p>
-      )}
-
-      {/* Submit */}
-      <button
-        onClick={handleSubmit}
-        disabled={!isValid || state === "loading"}
-        className="mt-auto w-full bg-white text-black font-semibold text-lg py-4 rounded-2xl disabled:opacity-30 active:opacity-80 transition-opacity"
-      >
-        {state === "loading" ? "Сохраняю…" : "Сохранить"}
-      </button>
-
+      {/* Token reset — скрытая кнопка */}
       {savedToken && (
         <button
-          onClick={() => { localStorage.removeItem("api_token"); setSavedToken(null); setShowTokenSetup(true); }}
-          className="text-zinc-700 text-xs text-center"
+          onClick={() => {
+            localStorage.removeItem("api_token");
+            setSavedToken(null);
+            setShowTokenSetup(true);
+          }}
+          className="absolute bottom-2 right-3 text-white/20 text-xs font-neue font-medium"
         >
-          Сменить токен
+          ••• токен
         </button>
       )}
-    </div>
+    </main>
   );
 }
