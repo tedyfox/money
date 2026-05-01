@@ -123,7 +123,7 @@ export default function ExpensePage() {
   if (showTokenSetup) {
     return (
       <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-4">
-        <img src="/bg.jpg" alt="" aria-hidden className="pointer-events-none select-none object-cover" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: -1 }} />
+        <img src="/bg.jpg" alt="" aria-hidden className="pointer-events-none select-none object-cover" style={{ position: "fixed", inset: 0, zIndex: -1 }} />
         <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
           <p className="text-white text-xl font-neue font-bold text-center">Введи токен доступа</p>
           <p className="text-white/60 text-sm font-neue font-medium text-center">Нужно сделать один раз</p>
@@ -152,7 +152,7 @@ export default function ExpensePage() {
   if (state === "success") {
     return (
       <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-6">
-        <img src="/bg.jpg" alt="" aria-hidden className="pointer-events-none select-none object-cover" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: -1 }} />
+        <img src="/bg.jpg" alt="" aria-hidden className="pointer-events-none select-none object-cover" style={{ position: "fixed", inset: 0, zIndex: -1 }} />
         <div className="flex flex-col items-center gap-4">
           <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
             ✓
@@ -180,7 +180,7 @@ export default function ExpensePage() {
      * (overflow:hidden ломает нативный date picker в iOS Safari)
      */
     <main className="fixed inset-0 flex flex-col px-[8px]">
-      <img src="/bg.jpg" alt="" aria-hidden className="pointer-events-none select-none object-cover" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: -1 }} />
+      <img src="/bg.jpg" alt="" aria-hidden className="pointer-events-none select-none object-cover" style={{ position: "fixed", inset: 0, zIndex: -1 }} />
 
       {/* Heading + аналитика */}
       <div className="relative shrink-0">
@@ -238,7 +238,7 @@ export default function ExpensePage() {
 
       {/* Скрытая кнопка смены токена */}
       <span className="absolute left-3 text-black text-xs font-neue font-medium" style={{ bottom: "8px", zIndex: 10 }}>
-        v17
+        v18
       </span>
       {savedToken && (
         <button
