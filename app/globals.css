@@ -21,7 +21,7 @@
 }
 
 html {
-  height: 100dvh;
+  min-height: 100dvh;
   background: #151f14 url(/bg.jpg) center/cover no-repeat;
   overscroll-behavior: none;
 }
