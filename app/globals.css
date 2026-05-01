@@ -22,6 +22,6 @@
 
 html, body {
   font-family: 'PP Neue Montreal', sans-serif;
-  overflow: hidden;
   background: #151f14;
+  overscroll-behavior: none;
 }
