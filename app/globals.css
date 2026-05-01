@@ -42,38 +42,13 @@ body {
   --tab-active-fg: #c9b8ff;
 }
 
-/* Маркер корня экрана для входной анимации при смене маршрута (см. RouteEnter) */
-.app-vt-page {
-  transform-origin: 50% 40%;
-}
-
-@keyframes app-route-content-in {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0) scale(0.96);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  body.app-route-enter-pulse .app-vt-page {
-    animation: app-route-content-in 0.52s cubic-bezier(0.32, 0.72, 0, 1) both;
-  }
-
   .floating-section-nav__pill {
     transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.app-route-enter-pulse .app-vt-page {
-    animation-duration: 0.01ms !important;
-  }
-
   .floating-section-nav__pill {
     transition-duration: 0.01ms !important;
   }
