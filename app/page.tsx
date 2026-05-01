@@ -153,26 +153,28 @@ export default function ExpensePage() {
 
   if (state === "success") {
     return (
-      <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-6">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
-            ✓
+      <>
+        <main className="app-vt-page fixed inset-0 flex flex-col items-center justify-center p-6 gap-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
+              ✓
+            </div>
+            <p className="text-white text-xl font-neue font-bold text-center">Расход сохранён</p>
+            {savedAmountRsd !== null && (
+              <p className="text-white/70 text-base font-neue font-medium text-center">
+                ≈ {savedAmountRsd.toLocaleString("ru-RU")} RSD
+              </p>
+            )}
+            <button
+              onClick={handleAddMore}
+              className="mt-4 bg-white text-black font-neue font-bold text-lg px-8 py-4 rounded-full active:opacity-80"
+            >
+              Добавить ещё
+            </button>
           </div>
-          <p className="text-white text-xl font-neue font-bold text-center">Расход сохранён</p>
-          {savedAmountRsd !== null && (
-            <p className="text-white/70 text-base font-neue font-medium text-center">
-              ≈ {savedAmountRsd.toLocaleString("ru-RU")} RSD
-            </p>
-          )}
-          <button
-            onClick={handleAddMore}
-            className="mt-4 bg-white text-black font-neue font-bold text-lg px-8 py-4 rounded-full active:opacity-80"
-          >
-            Добавить ещё
-          </button>
-        </div>
-        <FloatingSectionNav active="add" />
-      </main>
+        </main>
+        <FloatingSectionNav />
+      </>
     );
   }
 
@@ -181,68 +183,70 @@ export default function ExpensePage() {
      * fixed inset-0: страница не скроллится без overflow:hidden
      * (overflow:hidden ломает нативный date picker в iOS Safari)
      */
-    <main className="fixed inset-0 flex flex-col px-[8px]">
-      <div className="relative shrink-0">
-        <h1 className="font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap" style={{ paddingTop: "max(61px, env(safe-area-inset-top))" }}>
-          {"Hello,\nVika"}
-        </h1>
-      </div>
+    <>
+      <main className="app-vt-page fixed inset-0 flex flex-col px-[8px]">
+        <div className="relative shrink-0">
+          <h1 className="font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap" style={{ paddingTop: "max(61px, env(safe-area-inset-top))" }}>
+            {"Hello,\nVika"}
+          </h1>
+        </div>
 
-      <div className="mt-[77px] flex gap-[4px] shrink-0">
-        <DateBadge date={entryDate} onChange={setEntryDate} />
-        <AmountPill
-          amount={amount}
-          currency={currency}
-          onAmountChange={(v) => { setAmount(v); if (showErrors) setShowErrors(false); }}
-          onCurrencyChange={setCurrency}
-          showError={showErrors && !amountValid}
-        />
-      </div>
+        <div className="mt-[77px] flex gap-[4px] shrink-0">
+          <DateBadge date={entryDate} onChange={setEntryDate} />
+          <AmountPill
+            amount={amount}
+            currency={currency}
+            onAmountChange={(v) => { setAmount(v); if (showErrors) setShowErrors(false); }}
+            onCurrencyChange={setCurrency}
+            showError={showErrors && !amountValid}
+          />
+        </div>
 
-      {state === "error" && (
-        <p className="mt-[8px] shrink-0 text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
-      )}
-
-      <div className="mt-[16px] flex-1">
-        <CategoryPills
-          selected={category}
-          onSelect={(c) => { setCategory(c === category ? "" : c); if (showErrors) setShowErrors(false); }}
-        />
-        {showErrors && !category && (
-          <p className="mt-[8px] text-white/70 text-sm font-neue font-medium text-center">
-            Выбери категорию
-          </p>
+        {state === "error" && (
+          <p className="mt-[8px] shrink-0 text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
         )}
-      </div>
 
-      <div
-        className="flex gap-[8px] items-start shrink-0"
-        style={{ paddingBottom: "calc(max(30px, env(safe-area-inset-bottom)) + 88px)" }}
-      >
-        <CommentInput value={note} onChange={setNote} />
-        <SaveButton onPress={handleSubmit} loading={state === "loading"} />
-      </div>
+        <div className="mt-[16px] flex-1">
+          <CategoryPills
+            selected={category}
+            onSelect={(c) => { setCategory(c === category ? "" : c); if (showErrors) setShowErrors(false); }}
+          />
+          {showErrors && !category && (
+            <p className="mt-[8px] text-white/70 text-sm font-neue font-medium text-center">
+              Выбери категорию
+            </p>
+          )}
+        </div>
 
-      <span
-        className="absolute left-3 text-black text-xs font-neue font-medium z-10"
-        style={{ bottom: "max(100px, calc(88px + env(safe-area-inset-bottom, 0px)))" }}
-      >
-        v39
-      </span>
-      {savedToken && (
-        <button
-          onClick={() => {
-            localStorage.removeItem("api_token");
-            setSavedToken(null);
-            setShowTokenSetup(true);
-          }}
-          className="absolute right-3 text-white/20 text-xs font-neue font-medium z-10"
-          style={{ bottom: "max(24px, env(safe-area-inset-bottom, 0px))" }}
+        <div
+          className="flex gap-[8px] items-start shrink-0"
+          style={{ paddingBottom: "calc(max(30px, env(safe-area-inset-bottom)) + 88px)" }}
         >
-          ••• токен
-        </button>
-      )}
-      <FloatingSectionNav active="add" />
-    </main>
+          <CommentInput value={note} onChange={setNote} />
+          <SaveButton onPress={handleSubmit} loading={state === "loading"} />
+        </div>
+
+        <span
+          className="absolute left-3 text-black text-xs font-neue font-medium z-10"
+          style={{ bottom: "max(100px, calc(88px + env(safe-area-inset-bottom, 0px)))" }}
+        >
+          v40
+        </span>
+        {savedToken && (
+          <button
+            onClick={() => {
+              localStorage.removeItem("api_token");
+              setSavedToken(null);
+              setShowTokenSetup(true);
+            }}
+            className="absolute right-3 text-white/20 text-xs font-neue font-medium z-10"
+            style={{ bottom: "max(24px, env(safe-area-inset-bottom, 0px))" }}
+          >
+            ••• токен
+          </button>
+        )}
+      </main>
+      <FloatingSectionNav />
+    </>
   );
 }

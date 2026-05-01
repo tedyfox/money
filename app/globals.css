@@ -36,3 +36,62 @@ body {
   background: transparent;
   overscroll-behavior: none;
 }
+
+/* Cross-document / SPA-style view transitions (Safari 18+, Chromium) — контент с именем app-page */
+@view-transition {
+  navigation: auto;
+}
+
+.app-vt-page {
+  view-transition-name: app-page;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-section-nav__pill {
+    transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(app-page) {
+    animation: app-page-out 0.38s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  ::view-transition-new(app-page) {
+    animation: app-page-in 0.42s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
+@keyframes app-page-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    filter: blur(2px);
+    transform: scale(0.985);
+  }
+}
+
+@keyframes app-page-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}

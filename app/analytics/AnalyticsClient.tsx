@@ -426,7 +426,7 @@ export default function AnalyticsClient({
 
   return (
     <div
-      className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-28"
+      className="app-vt-page min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-28"
       style={{ paddingTop: "max(20px, env(safe-area-inset-top))" }}
     >
 

@@ -38,7 +38,7 @@ export default async function AnalyticsPage({
         fxRates={{ EUR: eurRate, RUB: rubRate, USD: usdRate, GEL: gelRate, RSD: 1 }}
         expenses={expenses}
       />
-      <FloatingSectionNav active="history" />
+      <FloatingSectionNav />
     </>
   );
 }
