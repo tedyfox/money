@@ -91,10 +91,8 @@ export default function ExpensePage() {
       });
 
       if (res.status === 401) {
-        localStorage.removeItem("api_token");
-        setSavedToken(null);
-        setShowTokenSetup(true);
-        setState("idle");
+        setErrorMsg("Токен неверный или истёк. Нажми «••• токен» и введи новый.");
+        setState("error");
         return;
       }
 
@@ -245,7 +243,7 @@ export default function ExpensePage() {
         className="absolute left-3 text-black text-xs font-neue font-medium"
         style={{ bottom: "24px", zIndex: 10 }}
       >
-        v35
+        v36
       </span>
       {savedToken && (
         <button
