@@ -20,6 +20,8 @@
   --font-neue: 'PP Neue Montreal', sans-serif;
 }
 
-body {
+html, body {
   font-family: 'PP Neue Montreal', sans-serif;
+  background: #151f14; /* dark green matching bg image — prevents white bars on iOS overscroll */
+  overflow-x: hidden;
 }

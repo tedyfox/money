@@ -14,9 +14,9 @@ export default function CategoryPills({ selected, onSelect }: Props) {
           key={cat}
           type="button"
           onClick={() => onSelect(cat)}
-          className={`px-[12px] pt-[9px] pb-[10px] rounded-full text-[16px] font-neue font-medium leading-none text-white bg-[#ff6c26] active:opacity-80 transition-opacity ${
-            selected === cat ? "border-[3px] border-white" : ""
-          }`}
+          className="px-[12px] pt-[9px] pb-[10px] rounded-full text-[16px] font-neue font-medium leading-none text-white bg-[#ff6c26] active:opacity-80 transition-opacity"
+          /* box-shadow inset не влияет на layout — выбранная категория не двигает соседей */
+          style={selected === cat ? { boxShadow: "inset 0 0 0 3px white" } : undefined}
         >
           {cat}
         </button>

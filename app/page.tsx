@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { CURRENCIES, CATEGORIES } from "@/lib/validate";
 import type { Currency, Category } from "@/lib/validate";
 import DateBadge from "./components/DateBadge";
@@ -15,13 +16,14 @@ function today(): string {
 
 type FormState = "idle" | "loading" | "success" | "error";
 
+/* position: fixed — bg всегда покрывает вьюпорт включая оверскролл на iOS */
 function Background() {
   return (
     <img
       src="/bg.jpg"
       alt=""
       aria-hidden
-      className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+      className="fixed inset-0 w-full h-full object-cover pointer-events-none select-none -z-10"
     />
   );
 }
@@ -123,10 +125,10 @@ export default function ExpensePage() {
     setSavedAmountRsd(null);
   }
 
-  // ⚠️ Figma: нет экрана токена — оформлен в том же стиле
+  // ⚠️ Figma: нет экрана токена
   if (showTokenSetup) {
     return (
-      <div className="relative min-h-dvh flex flex-col items-center justify-center p-6 gap-4">
+      <div className="relative h-dvh flex flex-col items-center justify-center p-6 gap-4 overflow-hidden">
         <Background />
         <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
           <p className="text-white text-xl font-neue font-bold text-center">Введи токен доступа</p>
@@ -152,10 +154,10 @@ export default function ExpensePage() {
     );
   }
 
-  // ⚠️ Figma: нет экрана успеха — оформлен в том же стиле
+  // ⚠️ Figma: нет экрана успеха
   if (state === "success") {
     return (
-      <div className="relative min-h-dvh flex flex-col items-center justify-center p-6 gap-6">
+      <div className="relative h-dvh flex flex-col items-center justify-center p-6 gap-6 overflow-hidden">
         <Background />
         <div className="relative z-10 flex flex-col items-center gap-4">
           <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
@@ -179,17 +181,27 @@ export default function ExpensePage() {
   }
 
   return (
-    <main className="relative min-h-dvh">
+    /* h-dvh + overflow-hidden: страница не скроллится ни по горизонтали, ни по вертикали */
+    <main className="relative h-dvh overflow-hidden">
       <Background />
 
-      <div className="relative flex flex-col min-h-dvh px-[8px]">
-        {/* Heading */}
-        <h1 className="pt-[61px] font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap">
-          {"Hello,\nVika"}
-        </h1>
+      <div className="relative h-full flex flex-col px-[8px]">
 
-        {/* Date badge + Amount pill */}
-        <div className="mt-[77px] flex gap-[4px]">
+        {/* Heading + аналитика */}
+        <div className="relative shrink-0">
+          <h1 className="pt-[61px] font-neue font-bold text-[137px] leading-[123px] text-white whitespace-pre-wrap">
+            {"Hello,\nVika"}
+          </h1>
+          <Link
+            href="/analytics"
+            className="absolute top-[16px] right-0 text-white/40 text-xs font-neue font-medium px-1 py-1"
+          >
+            аналитика →
+          </Link>
+        </div>
+
+        {/* Дата + сумма */}
+        <div className="mt-[77px] flex gap-[4px] shrink-0">
           <DateBadge date={entryDate} onChange={setEntryDate} />
           <AmountPill
             amount={amount}
@@ -201,25 +213,29 @@ export default function ExpensePage() {
 
         {/* ⚠️ Figma: нет error-состояния */}
         {state === "error" && (
-          <p className="mt-[8px] text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
+          <p className="mt-[8px] shrink-0 text-red-300 text-sm font-neue font-medium">{errorMsg}</p>
         )}
 
-        {/* Category pills */}
-        <div className="mt-[16px]">
-          <CategoryPills selected={category} onSelect={setCategory} />
+        {/* Категории — flex-1, overflow-hidden чтобы не скроллило всю страницу */}
+        <div className="mt-[16px] flex-1 overflow-hidden">
+          <CategoryPills
+            selected={category}
+            /* повторный тап на выбранную категорию снимает выделение */
+            onSelect={(c) => setCategory(c === category ? "" : c)}
+          />
         </div>
 
-        {/* Push bottom content down */}
-        <div className="flex-1 min-h-[16px]" />
-
-        {/* Comment + Save */}
-        <div className="flex gap-[8px]" style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}>
+        {/* Комментарий + Save — items-start т.к. высота разная (140 vs 144) */}
+        <div
+          className="flex gap-[8px] items-start shrink-0"
+          style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}
+        >
           <CommentInput value={note} onChange={setNote} />
           <SaveButton onPress={handleSubmit} disabled={!isValid} loading={state === "loading"} />
         </div>
       </div>
 
-      {/* Token reset — скрытая кнопка */}
+      {/* Скрытая кнопка смены токена */}
       {savedToken && (
         <button
           onClick={() => {
