@@ -31,6 +31,17 @@ html {
 body {
   height: 100%;
   font-family: 'PP Neue Montreal', sans-serif;
-  background: transparent;
+  background: #151f14 url(/bg.jpg) center / cover no-repeat;
   overscroll-behavior: none;
+}
+
+/* iOS Safari/PWA: reliable full-height background (home indicator area) */
+@supports (-webkit-touch-callout: none) {
+  html {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  body {
+    min-height: -webkit-fill-available;
+  }
 }
