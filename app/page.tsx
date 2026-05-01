@@ -67,8 +67,15 @@ export default function ExpensePage() {
 
     const token =
       new URLSearchParams(window.location.search).get("token") ??
+      savedToken ??
       localStorage.getItem("api_token") ??
       "";
+
+    if (!token) {
+      setShowTokenSetup(true);
+      setState("idle");
+      return;
+    }
 
     try {
       const res = await fetch(`/api/expenses?token=${encodeURIComponent(token)}`, {
@@ -238,7 +245,7 @@ export default function ExpensePage() {
         className="absolute left-3 text-black text-xs font-neue font-medium"
         style={{ bottom: "24px", zIndex: 10 }}
       >
-        v34
+        v35
       </span>
       {savedToken && (
         <button
