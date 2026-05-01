@@ -426,13 +426,16 @@ export default function AnalyticsClient({
 
   return (
     <div
-      className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5 pb-28"
-      style={{ paddingTop: "max(20px, env(safe-area-inset-top))" }}
+      className="min-h-screen bg-zinc-950 flex flex-col p-5 gap-5"
+      style={{
+        paddingTop: "max(20px, env(safe-area-inset-top))",
+        paddingBottom: "calc(max(24px, env(safe-area-inset-bottom, 0px)) + 88px)",
+      }}
     >
 
       {/* Шапка */}
       <div className="flex items-center justify-between">
-        <a href="/" className="text-zinc-400 text-sm hover:text-white transition-colors">← Назад</a>
+        <div className="w-12 shrink-0" aria-hidden />
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-zinc-400 hover:text-white px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors">←</button>
           <span className="text-white font-semibold text-base">{MONTH_NAMES[month - 1]} {year}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CURRENCIES } from "@/lib/validate";
 import type { Currency } from "@/lib/validate";
 
@@ -10,10 +10,33 @@ interface Props {
   onAmountChange: (v: string) => void;
   onCurrencyChange: (c: Currency) => void;
   showError?: boolean;
+  /** Фокус в поле суммы при монтировании и после закрытия выбора валюты */
+  autoFocus?: boolean;
 }
 
-export default function AmountPill({ amount, currency, onAmountChange, onCurrencyChange, showError }: Props) {
+export default function AmountPill({
+  amount,
+  currency,
+  onAmountChange,
+  onCurrencyChange,
+  showError,
+  autoFocus = false,
+}: Props) {
   const [showPicker, setShowPicker] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!autoFocus) return;
+    inputRef.current?.focus();
+  }, [autoFocus]);
+
+  function closePicker() {
+    setShowPicker(false);
+    if (!autoFocus) return;
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }
 
   return (
     <div className="flex-1 relative">
@@ -33,11 +56,13 @@ export default function AmountPill({ amount, currency, onAmountChange, onCurrenc
         </button>
         {/* ⚠️ Figma: нет focus-состояния для ввода */}
         <input
+          ref={inputRef}
           type="number"
           inputMode="decimal"
           placeholder="0"
           value={amount}
           onChange={(e) => onAmountChange(e.target.value)}
+          autoFocus={autoFocus}
           className="absolute top-[15px] bottom-[15px] left-[84px] right-[20px] text-[48px] font-neue font-medium leading-none text-black outline-none bg-transparent placeholder:text-black/30"
         />
       </div>
@@ -46,7 +71,7 @@ export default function AmountPill({ amount, currency, onAmountChange, onCurrenc
       {showPicker && (
         <div
           className="fixed inset-0 z-50 flex items-end"
-          onClick={() => setShowPicker(false)}
+          onClick={closePicker}
         >
           <div
             className="w-full bg-white rounded-t-[24px] px-[16px] pt-[16px] pb-[40px]"
@@ -58,7 +83,10 @@ export default function AmountPill({ amount, currency, onAmountChange, onCurrenc
                 <button
                   key={c}
                   type="button"
-                  onClick={() => { onCurrencyChange(c); setShowPicker(false); }}
+                  onClick={() => {
+                    onCurrencyChange(c);
+                    closePicker();
+                  }}
                   className={`px-[20px] py-[12px] rounded-full text-[16px] font-neue font-medium ${
                     c === currency ? "bg-black text-white" : "bg-[#f0f0f0] text-black"
                   }`}
