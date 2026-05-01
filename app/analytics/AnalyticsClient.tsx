@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { WeekBucket, CategoryBucket, ExpenseRow } from "@/lib/analytics";
+import { CATEGORIES } from "@/lib/validate";
 
 const MONTH_NAMES = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -154,6 +155,154 @@ function EditableNumber({
   );
 }
 
+interface EditData {
+  amount: number;
+  currency: string;
+  category: string;
+  entry_date: string;
+  note: string;
+}
+
+interface EditableExpenseRowProps {
+  expense: ExpenseRow;
+  isEditing: boolean;
+  isSaving: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (data: EditData) => void;
+  onDelete: () => void;
+}
+
+function EditableExpenseRow({ expense: e, isEditing, isSaving, onEdit, onCancel, onSave, onDelete }: EditableExpenseRowProps) {
+  const [draftAmount, setDraftAmount] = useState(String(e.amount));
+  const [draftCurrency, setDraftCurrency] = useState(e.currency);
+  const [draftCategory, setDraftCategory] = useState(e.category);
+  const [draftDate, setDraftDate] = useState(e.entry_date);
+  const [draftNote, setDraftNote] = useState(e.note ?? "");
+  const amountRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      setDraftAmount(String(e.amount));
+      setDraftCurrency(e.currency);
+      setDraftCategory(e.category);
+      setDraftDate(e.entry_date);
+      setDraftNote(e.note ?? "");
+      setTimeout(() => amountRef.current?.focus(), 0);
+    }
+  }, [isEditing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleSave() {
+    const amount = parseFloat(draftAmount);
+    if (isNaN(amount) || amount <= 0) return;
+    onSave({ amount, currency: draftCurrency, category: draftCategory, entry_date: draftDate, note: draftNote });
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") { e.preventDefault(); handleSave(); }
+    if (e.key === "Escape") onCancel();
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col gap-2 py-2 border-b border-zinc-800/60 last:border-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <input
+            ref={amountRef}
+            type="number"
+            value={draftAmount}
+            onChange={(e) => setDraftAmount(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="bg-zinc-800 text-white rounded-lg px-2 py-1 text-sm w-20 outline-none focus:ring-1 focus:ring-white/30"
+          />
+          <select
+            value={draftCurrency}
+            onChange={(e) => setDraftCurrency(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="bg-zinc-800 text-zinc-300 text-xs rounded-lg px-1.5 py-1 outline-none border-none"
+          >
+            {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select
+            value={draftCategory}
+            onChange={(e) => setDraftCategory(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="bg-zinc-800 text-zinc-300 text-xs rounded-lg px-1.5 py-1 outline-none border-none flex-1 min-w-0"
+          >
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={draftDate}
+            onChange={(e) => setDraftDate(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="bg-zinc-800 text-white rounded-lg px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-white/30 shrink-0"
+          />
+          <input
+            type="text"
+            value={draftNote}
+            onChange={(e) => setDraftNote(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Коммент"
+            className="bg-zinc-800 text-white rounded-lg px-2 py-1 text-sm flex-1 min-w-0 outline-none focus:ring-1 focus:ring-white/30 placeholder:text-zinc-600"
+          />
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="text-zinc-400 hover:text-white text-xs px-2 py-1 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-40"
+            >
+              {isSaving ? "…" : "Сохранить"}
+            </button>
+            <button
+              onClick={onCancel}
+              className="text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="group flex items-start justify-between py-2 border-b border-zinc-800/60 last:border-0 gap-2">
+      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-zinc-500 text-xs">{fmtDate(e.entry_date)}</span>
+          <span className="text-zinc-400 text-xs">{e.category}</span>
+        </div>
+        {e.note && <span className="text-zinc-600 text-xs truncate">{e.note}</span>}
+      </div>
+      <div className="flex flex-col items-end gap-0.5 shrink-0">
+        <span className="text-white text-sm font-medium">{fmt(e.amount_rsd)} RSD</span>
+        {e.currency !== "RSD" && (
+          <span className="text-zinc-500 text-xs">{fmtOrig(e.amount, e.currency)}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-0.5 shrink-0 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={onEdit}
+          className="text-zinc-600 hover:text-zinc-300 text-sm px-1 transition-colors"
+          aria-label="Редактировать"
+        >
+          ✎
+        </button>
+        <button
+          onClick={onDelete}
+          className="text-zinc-600 hover:text-red-400 text-base leading-none px-1 transition-colors"
+          aria-label="Удалить"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface Props {
   year: number;
   month: number;
@@ -176,11 +325,21 @@ export default function AnalyticsClient({
   const [newAmount, setNewAmount] = useState("");
   const [newCurrency, setNewCurrency] = useState<FxCurrency>("RSD");
 
+  const [localExpenses, setLocalExpenses] = useState<ExpenseRow[]>(expenses);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
   // Гидратация из localStorage
   useEffect(() => {
     setBudget(readLS(LS_BUDGET, 210600));
     setFixedExpenses(loadFixed());
   }, []);
+
+  // Синхронизация при смене месяца
+  useEffect(() => {
+    setLocalExpenses(expenses);
+    setEditingId(null);
+  }, [expenses]);
 
   function updateFixed(items: FixedExpense[]) {
     setFixedExpenses(items);
@@ -227,6 +386,39 @@ export default function AnalyticsClient({
     if (m > 12) { m = 1; y++; }
     if (m < 1) { m = 12; y--; }
     router.push(`/analytics?year=${y}&month=${m}`);
+  }
+
+  async function handleSaveEdit(id: string, data: EditData) {
+    const token = localStorage.getItem("api_token");
+    setSavingId(id);
+    try {
+      const res = await fetch(`/api/expenses/${id}?token=${token}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("PUT failed");
+      const updated: ExpenseRow = await res.json();
+      setLocalExpenses((prev) => prev.map((e) => e.id === id ? updated : e));
+      setEditingId(null);
+    } catch {
+      // keep edit mode open on error
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleDeleteExpense(id: string) {
+    const token = localStorage.getItem("api_token");
+    const idx = localExpenses.findIndex((e) => e.id === id);
+    const removed = localExpenses[idx];
+    setLocalExpenses((prev) => prev.filter((e) => e.id !== id));
+    try {
+      const res = await fetch(`/api/expenses/${id}?token=${token}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("DELETE failed");
+    } catch {
+      setLocalExpenses((prev) => [...prev.slice(0, idx), removed, ...prev.slice(idx)]);
+    }
   }
 
   const maxCategory = categoryBuckets[0]?.total ?? 1;
@@ -395,32 +587,27 @@ export default function AnalyticsClient({
       )}
 
       {/* Все записи */}
-      {expenses.length > 0 && (
+      {localExpenses.length > 0 && (
         <div className="bg-zinc-900 rounded-2xl p-4 flex flex-col gap-3">
           <p className="text-zinc-400 text-sm font-medium">Все записи</p>
-          <div className="flex flex-col gap-1">
-            {expenses.map((e) => (
-              <div key={e.id} className="flex items-start justify-between py-2 border-b border-zinc-800/60 last:border-0 gap-3">
-                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-zinc-500 text-xs">{fmtDate(e.entry_date)}</span>
-                    <span className="text-zinc-400 text-xs">{e.category}</span>
-                  </div>
-                  {e.note && <span className="text-zinc-600 text-xs truncate">{e.note}</span>}
-                </div>
-                <div className="flex flex-col items-end gap-0.5 shrink-0">
-                  <span className="text-white text-sm font-medium">{fmt(e.amount_rsd)} RSD</span>
-                  {e.currency !== "RSD" && (
-                    <span className="text-zinc-500 text-xs">{fmtOrig(e.amount, e.currency)}</span>
-                  )}
-                </div>
-              </div>
+          <div className="flex flex-col">
+            {localExpenses.map((e) => (
+              <EditableExpenseRow
+                key={e.id}
+                expense={e}
+                isEditing={editingId === e.id}
+                isSaving={savingId === e.id}
+                onEdit={() => setEditingId(e.id)}
+                onCancel={() => setEditingId(null)}
+                onSave={(data) => handleSaveEdit(e.id, data)}
+                onDelete={() => handleDeleteExpense(e.id)}
+              />
             ))}
           </div>
         </div>
       )}
 
-      {expenses.length === 0 && (
+      {localExpenses.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12">
           <p className="text-zinc-600 text-base">Нет записей за этот месяц</p>
         </div>

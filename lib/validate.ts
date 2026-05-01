@@ -54,3 +54,7 @@ export function validateExpenseInput(data: unknown): ValidationError[] {
 
   return errors;
 }
+
+export function validateExpenseUpdate(data: unknown): ValidationError[] {
+  return validateExpenseInput(data);
+}
