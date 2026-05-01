@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "transparent",
+  themeColor: "#151f14",
   // cover: фон залезает за Dynamic Island и home indicator
   viewportFit: "cover",
   // overlays-content: клавиатура появляется поверх контента, не сжимает вьюпорт
