@@ -127,7 +127,7 @@ export default function ExpensePage() {
   // ⚠️ Figma: нет экрана токена
   if (showTokenSetup) {
     return (
-      <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-4">
+      <main className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex flex-col items-center justify-center p-6 gap-4">
         <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
           <p className="text-white text-xl font-neue font-bold text-center">Введи токен доступа</p>
           <p className="text-white/60 text-sm font-neue font-medium text-center">Нужно сделать один раз</p>
@@ -155,7 +155,7 @@ export default function ExpensePage() {
   // ⚠️ Figma: нет экрана успеха
   if (state === "success") {
     return (
-      <main className="fixed inset-0 flex flex-col items-center justify-center p-6 gap-6">
+      <main className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex flex-col items-center justify-center p-6 gap-6">
         <div className="flex flex-col items-center gap-4">
           <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center text-[#ff6c26] text-3xl font-neue font-bold">
             ✓
@@ -182,7 +182,7 @@ export default function ExpensePage() {
      * fixed inset-0: страница не скроллится без overflow:hidden
      * (overflow:hidden ломает нативный date picker в iOS Safari)
      */
-    <main className="fixed inset-0 flex flex-col px-[8px]">
+    <main className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex flex-col px-[8px]">
 
       {/* Heading + аналитика */}
       <div className="relative shrink-0">
@@ -243,7 +243,7 @@ export default function ExpensePage() {
         className="absolute left-3 text-black text-xs font-neue font-medium"
         style={{ bottom: "24px", zIndex: 10 }}
       >
-        v39
+        v40
       </span>
       {savedToken && (
         <button
