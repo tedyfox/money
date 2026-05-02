@@ -35,4 +35,7 @@ body {
   font-family: 'PP Neue Montreal', sans-serif;
   background: transparent;
   overscroll-behavior: none;
+  max-width: 430px;
+  margin-left: auto;
+  margin-right: auto;
 }
